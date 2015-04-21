@@ -1,0 +1,5 @@
+name = OU Bag Importer
+description = Import bags from a URI
+package = Islandora
+version = VERSION
+core = 7.x
