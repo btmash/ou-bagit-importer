@@ -22,13 +22,13 @@ function ou_bagit_importer_drush_command() {
 function drush_ou_bagit_importer_import_ou_bag($uri) {
   $basename = basename($uri);
   $directory = "public://ou_bagit_importer/{$basename}";
-  var_dump($directory);
-  var_dump(file_prepare_directory($directory, FILE_CREATE_DIRECTORY));
-  if (ou_bagit_importer_is_path_remote($uri)) {
-    var_dump('remote!');
-  }
-  else {
-    var_dump('local');
+  if (file_prepare_directory($directory, FILE_CREATE_DIRECTORY)) {
+    if (ou_bagit_importer_is_path_remote($uri)) {
+      var_dump('remote!');
+    }
+    else {
+      var_dump('local');
+    }
   }
 }
 
