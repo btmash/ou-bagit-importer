@@ -12,7 +12,7 @@ function ou_bagit_importer_drush_command() {
     'description' => 'Import an OU bag from a stream',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
     'arguments' => array(
-      'uri' => 'Location (local or remote) to the bag directory',
+      'uri' => 'Location (local or remote) to the bag directory JSON',
     ),
   );
 
@@ -20,15 +20,13 @@ function ou_bagit_importer_drush_command() {
 }
 
 function drush_ou_bagit_importer_import_ou_bag($uri) {
-  $basename = basename($uri);
-  $directory = "public://ou_bagit_importer/{$basename}";
+  $pathinfo = pathinfo($uri);
+  $filename = $pathinfo['basename'];
+  $directory_basename = basename($pathinfo['dirname']);
+  $directory = "public://ou_bagit_importer/{$directory_basename}";
   if (file_prepare_directory($directory, FILE_CREATE_DIRECTORY)) {
-    if (ou_bagit_importer_is_path_remote($uri)) {
-      var_dump('remote!');
-    }
-    else {
-      var_dump('local');
-    }
+    // Copy file.
+    copy($uri, "{$directory}/$filename");
   }
 }
 
