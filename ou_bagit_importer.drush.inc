@@ -21,13 +21,70 @@ function ou_bagit_importer_drush_command() {
 
 function drush_ou_bagit_importer_import_ou_bag($uri) {
   $pathinfo = pathinfo($uri);
-  $filename = $pathinfo['basename'];
-  $directory_basename = basename($pathinfo['dirname']);
+  $json_filename = $pathinfo['basename'];
+  $directory_basename = preg_replace("/[^a-zA-Z0-9]+/", "", $pathinfo['dirname']);
   $directory = "public://ou_bagit_importer/{$directory_basename}";
   if (file_prepare_directory($directory, FILE_CREATE_DIRECTORY)) {
-    // Copy file.
-    copy($uri, "{$directory}/$filename");
+    @copy($uri, "{$directory}/{$json_filename}");
+    ou_bagit_importer_process_json_file($pathinfo['dirname'], $directory, $json_filename);
+    // Do stuff
+    @unlink("{$directory}/{$json_filename}");
   }
+}
+
+function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $json_filename) {
+  $json_data = drupal_json_decode(file_get_contents("{$drupal_directory}/{$json_filename}"));
+  if ($json_data) {
+    $type = $json_data['recipe']['import'];
+    $metadata = array();
+    foreach ($json_data['recipe']['metadata'] as $datastream => $path) {
+      @copy("{$source_uri}/{$path}", "{$drupal_directory}/{$path}");
+      $metadata[$datastream] = "{$drupal_directory}/{$path}";
+    }
+    if ($json_data['recipe']['import'] == 'book') {
+      $object = array(
+        'type' => 'bookCModel',
+        'uuid' => $json_data['recipe']['uuid'],
+        'metadata' => $metadata,
+      );
+    }
+    
+    var_dump($object);
+    var_dump('Object gets saved');
+    ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data['recipe']['pages']);
+  }
+  else {
+    var_dump("Invalid json data!");
+  }
+  var_dump($source_uri);
+}
+
+function ou_bagit_importer_process_book_pages($source_uri, $drupal_directory, $object, $pages) {
+  $batch = array(
+    'operations' => array(),
+    'finished' => '_ou_bagit_importer_batches_finished',
+    'title' => dt('Ingesting BAG...'),
+    'init_message' => dt('Preparing to ingest BAG...'),
+    'progress_message' => dt('Ingesting BAG'),
+    'error_message' => dt('File could not get ingested'),
+  );
+  foreach ($pages as $page) {
+    $batch['operations'] = array(
+      'ou_bagit_importer_batch_import_page',
+      array(
+        $source_uri,
+        $drupal_directory,
+        $object,
+        $page,
+      ),
+    );
+  }
+}
+
+function ou_bagit_importer_batch_import_page
+
+function _ou_bagit_importer_batches_finished() {
+  drush_print('Ingest complete!');
 }
 
 function ou_bagit_importer_is_path_remote($path) {
