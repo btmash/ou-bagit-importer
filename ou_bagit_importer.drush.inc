@@ -51,7 +51,10 @@ function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $js
     
     var_dump($object);
     var_dump('Object gets saved');
-    ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data['recipe']['pages']);
+    ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data);
+    $batch =& batch_get();
+    $batch['progressive'] = FALSE;
+    drush_backend_batch_process();
   }
   else {
     var_dump("Invalid json data!");
@@ -59,7 +62,7 @@ function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $js
   var_dump($source_uri);
 }
 
-function ou_bagit_importer_process_book_pages($source_uri, $drupal_directory, $object, $pages) {
+function ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data) {
   $batch = array(
     'operations' => array(),
     'finished' => '_ou_bagit_importer_batches_finished',
@@ -68,20 +71,41 @@ function ou_bagit_importer_process_book_pages($source_uri, $drupal_directory, $o
     'progress_message' => dt('Ingesting BAG'),
     'error_message' => dt('File could not get ingested'),
   );
-  foreach ($pages as $page) {
-    $batch['operations'] = array(
+  foreach ($json_data['recipe']['pages'] as $key => $page) {
+    $batch['operations'][] = array(
       'ou_bagit_importer_batch_import_page',
       array(
         $source_uri,
         $drupal_directory,
         $object,
+        $key,
         $page,
+        $json_data,
       ),
     );
   }
+  batch_set($batch);
 }
 
-function ou_bagit_importer_batch_import_page
+function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $object, $page_number, $page, $json) {
+  $file = $page['file'];
+  $file_status = @copy("{$source_uri}/{$file}", "{$drupal_directory}/{$file}");
+  if ($file_status) {
+    $file_hash = sha1_file("{$drupal_directory}/{$file}");
+    if ($file_hash == $page['sha1']) {
+      var_dump('Page will get ingested here');
+    }
+    else {
+      var_dump($file);
+      var_dump($file_hash);
+      var_dump($page['sha1']);
+    }
+    @unlink("{$drupal_directory}/{$file}");
+  }
+  else {
+    var_dump("Could not find {$file}");
+  }
+}
 
 function _ou_bagit_importer_batches_finished() {
   drush_print('Ingest complete!');
