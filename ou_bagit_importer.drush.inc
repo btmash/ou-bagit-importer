@@ -91,19 +91,17 @@ function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $ob
   $file = $page['file'];
   $file_status = @copy("{$source_uri}/{$file}", "{$drupal_directory}/{$file}");
   if ($file_status) {
-    $file_hash = sha1_file("{$drupal_directory}/{$file}");
+    $file_hash = md5_file("{$drupal_directory}/{$file}");
     if ($file_hash == $page['sha1']) {
-      var_dump('Page will get ingested here');
+      drupal_set_message(t("Page @page will get ingested here", array('@page' => $file)));
     }
     else {
-      var_dump($file);
-      var_dump($file_hash);
-      var_dump($page['sha1']);
+      drupal_set_message(t("Page @page hash does not match hash in recipe.", array('@page' => $file)), 'warning');
     }
     @unlink("{$drupal_directory}/{$file}");
   }
   else {
-    var_dump("Could not find {$file}");
+    drupal_set_message(t("Could not find @page specified in recipe.", array('@page' => $file)), 'warning');
   }
 }
 
