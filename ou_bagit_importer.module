@@ -41,18 +41,26 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
     'xsl' => drupal_get_path('module', 'islandora_batch') . '/transforms/mods_to_dc.xsl',
   ));
   $datastreams = array(
-    'MODS' => $mods_record,
-    'DC' => $dc_record,
-    'TN' => file_get_contents($object_array['metadata']['thumbnail']),
+    'MODS' => array(
+      'type' => 'text/xml',
+      'content' => $mods_record,
+    ),
+    'DC' => array(
+      'type' => 'text/xml',
+      'content' => $dc_record,
+    ),
+    'TN' => array(
+      'type' => mime_content_type($object_array['metadata']['thumbnail']),
+      'content' => file_get_contents($object_array['metadata']['thumbnail']),
+    ),
   );
   foreach ($datastreams as $key => $value) {
     if (!$islandora_object[$key]) {
       $ds = $islandora_object->constructDatastream($key);
       $ds->label = $key;
-      $ds->mimetype = mime_content_type($value);
+      $ds->mimetype = $value['type'];
       $ds->control_group = 'I';
-      $ds->setContentFromString($value);
-      var_dump($ds->mimetype);
+      $ds->setContentFromString($value['content']);
       $islandora_object->ingestDatastream($ds);
     }
   }
