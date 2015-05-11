@@ -7,8 +7,12 @@ define('OU_BAGIT_IMPORTER_OBJECT_NAMESPACE', 'islandora');
  */
 function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
   global $user;
+  $account = $user;
+  if (user_is_logged_in()) {
+    $account = user_load(1);
+  }
   $parent_collection = 'islandora:bookCollection';
-  $tuque = islandora_get_tuque_connection();
+  $tuque = islandora_get_tuque_connection($account);
   $uuid = OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}";
   $islandora_object = islandora_object_load($uuid);
   $update = (bool) $json_data['update'];
