@@ -51,7 +51,7 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
       'content' => $dc_record,
     ),
     'TN' => array(
-      'type' => finfo_file($finfo, $object_array['metadata']['thumbnail']),
+      'type' => finfo_file($finfo, drupal_realpath($object_array['metadata']['thumbnail'])),
       'content' => file_get_contents($object_array['metadata']['thumbnail']),
     ),
   );
