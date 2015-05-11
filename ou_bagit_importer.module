@@ -1,6 +1,6 @@
 <?php
 
-define('OU_BAGIT_IMPORTER_OBJECT_NAMESPACE', 'uuid');
+define('OU_BAGIT_IMPORTER_OBJECT_NAMESPACE', 'islandora');
 
 /**
  * Creates/Updates a book collection.
@@ -17,6 +17,7 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
     'fedora-system:FedoraObject-3.0',
   );
   if ($islandora_object && !$update) {
+    drupal_set_message('Book collection object exists');
     return;
   }
   // Set up islandora object
@@ -37,8 +38,23 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
     'input' => $mods_record,
     'xsl' => drupal_get_path('module', 'islandora_batch') . '/transforms/mods_to_dc.xsl',
   ));
-  var_dump($mods_record);
-  var_dump($dc_record);
+  $datastreams = array(
+    'MODS' => $mods_record,
+    'DC' => $dc_record,
+    'TN' => $object_array['metadata']['thumbnail'],
+  );
+  foreach ($datastreams as $key => $value) {
+    if ($fedora_object[$key]) {
+      $fedora_ds = $fedora_object[$datastream];
+      $ds = $islandora_object->constructDatastream($datastream);
+      $ds->label = $key;
+      $ds->mimetype = mime_content_type($value);
+      $ds->control_group = 'I';
+      $ds->setContentFromString(file_get_contents($value));
+      $islandora_object->ingestDatastream($ds);
+    }
+  }
+  islandora_add_object($islandora_object);
 }
 
 function ou_bagit_importer_run_xslt_transform($info) {
