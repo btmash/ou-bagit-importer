@@ -43,7 +43,7 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
   $datastreams = array(
     'MODS' => $mods_record,
     'DC' => $dc_record,
-    'TN' => $object_array['metadata']['thumbnail'],
+    'TN' => file_get_contents($object_array['metadata']['thumbnail']),
   );
   foreach ($datastreams as $key => $value) {
     if (!$islandora_object[$key]) {
@@ -51,7 +51,7 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
       $ds->label = $key;
       $ds->mimetype = mime_content_type($value);
       $ds->control_group = 'I';
-      $ds->setContentFromString(file_get_contents($value));
+      $ds->setContentFromString($value);
       var_dump($ds->mimetype);
       $islandora_object->ingestDatastream($ds);
     }
