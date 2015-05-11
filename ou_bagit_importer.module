@@ -23,6 +23,7 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
   // Set up islandora object
   if (!$islandora_object) {
     $islandora_object = $tuque->repository->constructObject(OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}");
+    $islandora_object->id = OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}";
     $islandora_object->state = 'A';
     $islandora_object->label = $object_array['uuid'];
     $islandora_object->owner = $user->name;
