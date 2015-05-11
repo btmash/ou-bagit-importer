@@ -1,2 +1,58 @@
 <?php
 
+define('OU_BAGIT_IMPORTER_OBJECT_NAMESPACE', 'uuid');
+
+/**
+ * Creates/Updates a book collection.
+ */
+function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
+  global $user;
+  $parent_object = 'islandora:bookCollection';
+  $tuque = islandora_get_tuque_connection();
+  $uuid = OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}";
+  $islandora_object = islandora_object_load($uuid);
+  $update = (bool) $json_data['update'];
+  $content_models = array(
+    $object_array['type'],
+    'fedora-system:FedoraObject-3.0',
+  );
+  if ($islandora_object && !$update) {
+    return;
+  }
+  // Set up islandora object
+  if ($islandora_object) {
+    $islandora_object = $tuque->repository->constructObject(OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}");
+    $islandora_object->state = 'A';
+    $islandora_object->label = $object_array['uuid'];
+    $islandora_object->owner = $user->name;
+    foreach ($content_models as $content_model) {
+      $islandora_object->relationships->add(FEDORA_MODEL_URI, 'hasModel', $content_model);
+    }
+  }
+  $mods_record = ou_bagit_importer_run_xslt_transform(array(
+    'input' => file_get_contents($object_array['metadata']['marcxml']),
+    'xsl' => drupal_get_path('module', 'islandora_marcxml') . '/xsl/MARC21slim2MODS3-5.xsl',
+  ));
+  $dc_record = ou_bagit_importer_run_xslt_transform(array(
+    'input' => $mods_record,
+    'xsl' => drupal_get_path('module', 'islandora_batch') . '/transforms/mods_to_dc.xsl',
+  ));
+}
+
+function ou_bagit_importer_run_xslt_transform($info) {
+  $xsl = new DOMDocument();
+  $xsl->load($info['xsl']);
+
+  $input = new DOMDocument();
+  $input->loadXML($info['input']);
+
+  $processor = new XSLTProcessor();
+  $processor->importStylesheet($xsl);
+
+  if (isset($info['php_functions'])) {
+    $processor->registerPHPFunctions($info['php_functions']);
+  }
+
+  // XXX: Suppressing warnings regarding unregistered prefixes.
+  return $processor->transformToXML($input);
+}
