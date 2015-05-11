@@ -45,10 +45,7 @@ function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $js
       $object = array(
         'type' => 'islandora:bookCModel',
         'uuid' => $json_data['recipe']['uuid'],
-        'metadata' => array(
-          'marcxml' => $json_data['recipe']['metadata']['marcxml'],
-          'thumbnail' => $json_data['recipe']['metadata']['thumbnail'],
-        ),
+        'metadata' => $metadata,
       );
     }
 
