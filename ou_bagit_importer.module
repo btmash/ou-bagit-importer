@@ -46,7 +46,7 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
     'TN' => $object_array['metadata']['thumbnail'],
   );
   foreach ($datastreams as $key => $value) {
-    if ($islandora_object[$key]) {
+    if (!$islandora_object[$key]) {
       $ds = $islandora_object->constructDatastream($key);
       $ds->label = $key;
       $ds->mimetype = mime_content_type($value);
