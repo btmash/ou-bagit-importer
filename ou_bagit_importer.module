@@ -7,7 +7,7 @@ define('OU_BAGIT_IMPORTER_OBJECT_NAMESPACE', 'islandora');
  */
 function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
   global $user;
-  $parent_object = 'islandora:bookCollection';
+  $parent_collection = 'islandora:bookCollection';
   $tuque = islandora_get_tuque_connection();
   $uuid = OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}";
   $islandora_object = islandora_object_load($uuid);
@@ -30,6 +30,7 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
     foreach ($content_models as $content_model) {
       $islandora_object->relationships->add(FEDORA_MODEL_URI, 'hasModel', $content_model);
     }
+    $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $parent_collection);
   }
   $mods_record = ou_bagit_importer_run_xslt_transform(array(
     'input' => file_get_contents($object_array['metadata']['marcxml']),
@@ -51,6 +52,7 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
       $ds->mimetype = mime_content_type($value);
       $ds->control_group = 'I';
       $ds->setContentFromString(file_get_contents($value));
+      var_dump($ds->mimetype);
       $islandora_object->ingestDatastream($ds);
     }
   }
