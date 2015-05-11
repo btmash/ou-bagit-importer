@@ -71,7 +71,7 @@ function ou_bagit_importer_process_json_book_pages($source_uri, $drupal_director
     'progress_message' => dt('Ingesting BAG'),
     'error_message' => dt('File could not get ingested'),
   );
-  foreach ($json_data['recipe']['pages'] as $key => $page) {
+  foreach ($json_data['pages'] as $key => $page) {
     $batch['operations'][] = array(
       'ou_bagit_importer_batch_import_page',
       array(

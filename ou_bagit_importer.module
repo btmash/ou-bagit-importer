@@ -37,6 +37,8 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
     'input' => $mods_record,
     'xsl' => drupal_get_path('module', 'islandora_batch') . '/transforms/mods_to_dc.xsl',
   ));
+  var_dump($mods_record);
+  var_dump($dc_record);
 }
 
 function ou_bagit_importer_run_xslt_transform($info) {
