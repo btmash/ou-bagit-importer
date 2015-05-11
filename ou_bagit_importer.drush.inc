@@ -43,15 +43,18 @@ function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $js
     }
     if ($json_data['recipe']['import'] == 'book') {
       $object = array(
-        'type' => 'bookCModel',
+        'type' => 'islandora:bookCModel',
         'uuid' => $json_data['recipe']['uuid'],
-        'metadata' => $metadata,
+        'metadata' => array(
+          'marcxml' => $json_data['recipe']['metadata']['marcxml'],
+          'thumbnail' => $json_data['recipe']['metadata']['thumbnail'],
+        ),
       );
     }
-    
-    var_dump($object);
-    var_dump('Object gets saved');
-    ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data);
+
+    ou_bagit_importer_save_book_collection($object, $json_data);
+    drupal_set_message(t('Saving book collection @book', array('@book' => $object['uuid'])));
+    ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data['recipe']);
     $batch =& batch_get();
     $batch['progressive'] = FALSE;
     drush_backend_batch_process();
