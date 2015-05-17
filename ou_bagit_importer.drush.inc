@@ -10,7 +10,7 @@ function ou_bagit_importer_drush_command() {
     'callback' => 'drush_ou_bagit_importer_import_ou_bag',
     'aliases' => array('oubib'),
     'description' => 'Import an OU bag from a stream',
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
     'arguments' => array(
       'uri' => 'Location (local or remote) to the bag directory JSON',
     ),
