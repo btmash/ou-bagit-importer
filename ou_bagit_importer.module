@@ -23,7 +23,7 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
   if (!$islandora_object) {
     $islandora_object = $tuque->repository->constructObject(OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}");
     $islandora_object->id = OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}";
-    $islandora_object->state = 'I';
+    $islandora_object->state = 'A';
     $islandora_object->label = $object_array['uuid'];
     $islandora_object->ownerId = $user->name;
     foreach ($content_models as $content_model) {
@@ -49,10 +49,10 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
       'type' => 'text/xml',
       'content' => $dc_record,
     ),
-//    'TN' => array(
-//      'type' => finfo_file($finfo, drupal_realpath($object_array['metadata']['thumbnail'])),
-//      'content' => file_get_contents($object_array['metadata']['thumbnail']),
-//    ),
+    'TN' => array(
+      'type' => finfo_file($finfo, drupal_realpath($object_array['metadata']['thumbnail'])),
+      'content' => file_get_contents($object_array['metadata']['thumbnail']),
+    ),
   );
   finfo_close($finfo);
   foreach ($datastreams as $key => $value) {
