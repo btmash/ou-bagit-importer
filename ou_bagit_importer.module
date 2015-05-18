@@ -99,7 +99,7 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
   $finfo = finfo_open(FILEINFO_MIME_TYPE);
   $datastreams = array(
     'OBJ' => array(
-      'type' => finfo_file($finfo, drupal_realpath($object_array['metadata']['thumbnail'])),
+      'type' => finfo_file($finfo, drupal_realpath($object_array['file'])),
       'content' => file_get_contents($object_array['file']),
     ),
     'EXIF' => array(
