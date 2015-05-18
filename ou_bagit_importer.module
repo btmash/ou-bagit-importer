@@ -84,7 +84,7 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
     return;
   }
   if (!$islandora_object) {
-    $islandora_object = $tuque->repository->constructObject(OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}");
+    $islandora_object = $tuque->repository->constructObject($uuid);
     $islandora_object->id = $uuid;
     $islandora_object->state = 'A';
     $islandora_object->label = $object_array['uuid'];
