@@ -93,8 +93,11 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
     foreach ($content_models as $content_model) {
       $islandora_object->relationships->add(FEDORA_MODEL_URI, 'hasModel', $content_model);
     }
-    $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ':' . $object_array['book']);
+    $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOf', OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ':' . $object_array['book']);
+    $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isPageOf', OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ':' . $object_array['book']);
     $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isSequenceNumber', $object_array['page_number']);
+    $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isPageNumber', $object_array['page_number']);
+    $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isSection', '1');
   }
   $finfo = finfo_open(FILEINFO_MIME_TYPE);
   $datastreams = array(
