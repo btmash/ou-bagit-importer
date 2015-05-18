@@ -72,7 +72,7 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
  * Creates/Updates a book page .
  */
 function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
-  $uuid = OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}";
+  $uuid = OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":" . $object_array['uuid'];
   $islandora_object = islandora_object_load($uuid);
   $update = (bool) $json_recipe['update'];
   $content_models = array(
