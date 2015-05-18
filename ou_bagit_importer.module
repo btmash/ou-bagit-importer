@@ -10,7 +10,7 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
   $tuque = islandora_get_tuque_connection();
   $uuid = OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}";
   $islandora_object = islandora_object_load($uuid);
-  $update = (bool) $json_data['update'];
+  $update = (bool) $json_recipe['update'];
   $content_models = array(
     $object_array['type'],
     'fedora-system:FedoraObject-3.0',
@@ -69,10 +69,56 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
 }
 
 /**
- * Creates/Updates a book collection.
+ * Creates/Updates a book page .
  */
 function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
-  var_dump($object_array);
+  $parent_collection = OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ':' . $object_array('book');
+  $uuid = OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}";
+  $islandora_object = islandora_object_load($uuid);
+  $update = (bool) $json_recipe['update'];
+  $content_models = array(
+    $object_array['type'],
+    'fedora-system:FedoraObject-3.0',
+  );
+  if ($islandora_object && !$update) {
+    drupal_set_message('Book page object exists');
+    return;
+  }
+  if (!$islandora_object) {
+    $islandora_object = $tuque->repository->constructObject(OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}");
+    $islandora_object->id = OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}";
+    $islandora_object->state = 'A';
+    $islandora_object->label = $object_array['uuid'];
+    $islandora_object->ownerId = $user->name;
+    foreach ($content_models as $content_model) {
+      $islandora_object->relationships->add(FEDORA_MODEL_URI, 'hasModel', $content_model);
+    }
+    $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $parent_collection);
+    $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isSequenceNumber', $object_array['page_number']);
+  }
+  $finfo = finfo_open(FILEINFO_MIME_TYPE);
+  $datastreams = array(
+    'OBJ' => array(
+      'type' => finfo_file($finfo, drupal_realpath($object_array['metadata']['thumbnail'])),
+      'content' => file_get_contents($object_array['file']),
+    ),
+    'EXIF' => array(
+      'type' => 'text/plain',
+      'content' => file_get_contents($object_array['exif']),
+    )
+  );
+  finfo_close($finfo);
+  foreach ($datastreams as $key => $value) {
+    if (!$islandora_object[$key]) {
+      $ds = $islandora_object->constructDatastream($key);
+      $ds->label = $key;
+      $ds->mimetype = $value['type'];
+      $ds->control_group = 'M';
+      $ds->setContentFromString($value['content']);
+      $islandora_object->ingestDatastream($ds);
+    }
+  }
+  islandora_add_object($islandora_object);
 }
 
 function ou_bagit_importer_run_xslt_transform($info) {
