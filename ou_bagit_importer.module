@@ -72,7 +72,6 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
  * Creates/Updates a book page .
  */
 function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
-  $parent_collection = OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ':' . $object_array('book');
   $uuid = OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}";
   $islandora_object = islandora_object_load($uuid);
   $update = (bool) $json_recipe['update'];
@@ -86,14 +85,14 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
   }
   if (!$islandora_object) {
     $islandora_object = $tuque->repository->constructObject(OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}");
-    $islandora_object->id = OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}";
+    $islandora_object->id = $uuid;
     $islandora_object->state = 'A';
     $islandora_object->label = $object_array['uuid'];
     $islandora_object->ownerId = $user->name;
     foreach ($content_models as $content_model) {
       $islandora_object->relationships->add(FEDORA_MODEL_URI, 'hasModel', $content_model);
     }
-    $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $parent_collection);
+    $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ':' . $object_array['book']);
     $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isSequenceNumber', $object_array['page_number']);
   }
   $finfo = finfo_open(FILEINFO_MIME_TYPE);
