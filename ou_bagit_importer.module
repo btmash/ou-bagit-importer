@@ -78,7 +78,6 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
   $update = (bool) $json_recipe['update'];
   $content_models = array(
     $object_array['type'],
-    'fedora-system:FedoraObject-3.0',
   );
   if ($islandora_object && !$update) {
     drupal_set_message('Book page object exists');
@@ -94,10 +93,10 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
       $islandora_object->relationships->add(FEDORA_MODEL_URI, 'hasModel', $content_model);
     }
     $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOf', OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ':' . $object_array['book']);
-    $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isPageOf', OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ':' . $object_array['book']);
-    $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isSequenceNumber', $object_array['page_number']);
-    $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isPageNumber', $object_array['page_number']);
-    $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isSection', '1');
+    $islandora_object->relationships->add(ISLANDORA_RELS_EXT_URI, 'isPageOf', OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ':' . $object_array['book']);
+    $islandora_object->relationships->add(ISLANDORA_RELS_EXT_URI, 'isSequenceNumber', $object_array['page_number']);
+    $islandora_object->relationships->add(ISLANDORA_RELS_EXT_URI, 'isPageNumber', $object_array['page_number']);
+    $islandora_object->relationships->add(ISLANDORA_RELS_EXT_URI, 'isSection', '1');
   }
   $finfo = finfo_open(FILEINFO_MIME_TYPE);
   $datastreams = array(
