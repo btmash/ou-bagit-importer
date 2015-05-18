@@ -49,7 +49,7 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
       'type' => 'text/xml',
       'content' => $dc_record,
     ),
-    'TN' => array(
+    'OBJ' => array(
       'type' => finfo_file($finfo, drupal_realpath($object_array['metadata']['thumbnail'])),
       'content' => file_get_contents($object_array['metadata']['thumbnail']),
     ),
@@ -66,6 +66,13 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
     }
   }
   islandora_add_object($islandora_object);
+}
+
+/**
+ * Creates/Updates a book collection.
+ */
+function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
+  var_dump($object_array);
 }
 
 function ou_bagit_importer_run_xslt_transform($info) {

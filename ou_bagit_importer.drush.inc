@@ -47,11 +47,11 @@ function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $js
         'uuid' => $json_data['recipe']['uuid'],
         'metadata' => $metadata,
       );
+      ou_bagit_importer_save_book_collection($object, $json_data);
+      drupal_set_message(t('Saving book collection @book', array('@book' => $object['uuid'])));
+      ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data['recipe']);
     }
 
-    ou_bagit_importer_save_book_collection($object, $json_data);
-    drupal_set_message(t('Saving book collection @book', array('@book' => $object['uuid'])));
-    ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data['recipe']);
     $batch =& batch_get();
     $batch['progressive'] = FALSE;
     drush_backend_batch_process();
@@ -87,12 +87,23 @@ function ou_bagit_importer_process_json_book_pages($source_uri, $drupal_director
   batch_set($batch);
 }
 
-function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $object, $page_number, $page, $json) {
+function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $object, $page_number, $page, $json_data) {
   $file = $page['file'];
   $file_status = @copy("{$source_uri}/{$file}", "{$drupal_directory}/{$file}");
+  $exif_status = @copy("{$source_uri}/{$page['exif']}", "{$drupal_directory}/{$page['exif']}");
   if ($file_status) {
     $file_hash = md5_file("{$drupal_directory}/{$file}");
     if ($file_hash == $page['sha1']) {
+      $object = array(
+        'type' => 'islandora:pageCModel',
+        'book' => $json_data['uuid'],
+        'page_number' => $page_number,
+        'file' => "{$drupal_directory}/{$file}",
+        'exif' => "{$drupal_directory}/{$page['exif']}",
+        'uuid' => $page['uuid'],
+        'metadata' => $metadata,
+      );
+      ou_bagit_importer_save_book_page($object, $json_data);
       drupal_set_message(t("Page @page will get ingested here", array('@page' => $file)));
     }
     else {
