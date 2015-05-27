@@ -3,3 +3,4 @@ description = Import bags from a URI
 package = Islandora
 version = VERSION
 core = 7.x
+dependencies[] = islandora

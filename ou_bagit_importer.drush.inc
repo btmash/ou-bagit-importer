@@ -57,9 +57,8 @@ function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $js
     drush_backend_batch_process();
   }
   else {
-    var_dump("Invalid json data!");
+    drupal_set_message(t('Invalid JSON data!'), 'error');
   }
-  var_dump($source_uri);
 }
 
 function ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data) {

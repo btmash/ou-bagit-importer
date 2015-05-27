@@ -30,6 +30,10 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
       $islandora_object->relationships->add(FEDORA_MODEL_URI, 'hasModel', $content_model);
     }
     $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $parent_collection);
+  } else {
+    $islandora_object->state = 'A';
+    $islandora_object->label = $object_array['uuid'];
+    $islandora_object->ownerId = $user->name;
   }
   $mods_record = ou_bagit_importer_run_xslt_transform(array(
     'input' => file_get_contents($object_array['metadata']['marcxml']),
@@ -58,12 +62,14 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
   foreach ($datastreams as $key => $value) {
     if (!$islandora_object[$key]) {
       $ds = $islandora_object->constructDatastream($key);
-      $ds->label = $key;
-      $ds->mimetype = $value['type'];
-      $ds->control_group = 'M';
-      $ds->setContentFromString($value['content']);
-      $islandora_object->ingestDatastream($ds);
+    } else {
+      $ds = $islandora_object[$key];
     }
+    $ds->label = $key;
+    $ds->mimetype = $value['type'];
+    $ds->control_group = 'M';
+    $ds->setContentFromString($value['content']);
+    $islandora_object->ingestDatastream($ds);
   }
   islandora_add_object($islandora_object);
 }
@@ -97,6 +103,10 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
     $islandora_object->relationships->add(ISLANDORA_RELS_EXT_URI, 'isSequenceNumber', $object_array['page_number']);
     $islandora_object->relationships->add(ISLANDORA_RELS_EXT_URI, 'isPageNumber', $object_array['page_number']);
     $islandora_object->relationships->add(ISLANDORA_RELS_EXT_URI, 'isSection', '1');
+  } else {
+    $islandora_object->state = 'A';
+    $islandora_object->label = $object_array['uuid'];
+    $islandora_object->ownerId = $user->name;
   }
   $finfo = finfo_open(FILEINFO_MIME_TYPE);
   $datastreams = array(
