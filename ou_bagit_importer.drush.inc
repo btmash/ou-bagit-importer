@@ -38,8 +38,7 @@ function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $js
     $type = $json_data['recipe']['import'];
     $metadata = array();
     foreach ($json_data['recipe']['metadata'] as $datastream => $path) {
-      @copy("{$source_uri}/{$path}", "{$drupal_directory}/{$path}");
-      $metadata[$datastream] = "{$drupal_directory}/{$path}";
+      $metadata[$datastream] = _ou_bagit_importer_copy($source_uri, $drupal_directory, $path);
     }
     if ($json_data['recipe']['import'] == 'book') {
       $object = array(
@@ -87,36 +86,52 @@ function ou_bagit_importer_process_json_book_pages($source_uri, $drupal_director
 }
 
 function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $object, $page_number, $page, $json_data) {
-  $file = $page['file'];
-  $file_status = @copy("{$source_uri}/{$file}", "{$drupal_directory}/{$file}");
-  $exif_status = @copy("{$source_uri}/{$page['exif']}", "{$drupal_directory}/{$page['exif']}");
-  if ($file_status) {
-    $file_hash = md5_file("{$drupal_directory}/{$file}");
+  $file = _ou_bagit_importer_copy($source_uri, $drupal_directory, $page['file']);
+  $exif = _ou_bagit_importer_copy($source_uri, $drupal_directory, $page['exif']);
+  if ($file) {
+    $file_hash = md5_file($file);
     if ($file_hash == $page['sha1']) {
       $object = array(
         'type' => 'islandora:pageCModel',
         'book' => $json_data['uuid'],
         'page_number' => $page_number,
-        'file' => "{$drupal_directory}/{$file}",
-        'exif' => "{$drupal_directory}/{$page['exif']}",
+        'file' => $file,
+        'exif' => $exif,
         'uuid' => $page['uuid'],
         'metadata' => $metadata,
       );
-      ou_bagit_importer_save_book_page($object, $json_data);
       drupal_set_message(t("Page @page will get ingested here", array('@page' => $file)));
+      ou_bagit_importer_save_book_page($object, $json_data);
     }
     else {
       drupal_set_message(t("Page @page hash does not match hash in recipe.", array('@page' => $file)), 'warning');
     }
-    @unlink("{$drupal_directory}/{$file}");
+    @unlink($file);
+    @unlink($exif);
   }
   else {
-    drupal_set_message(t("Could not find @page specified in recipe.", array('@page' => $file)), 'warning');
+    drupal_set_message(t("Could not find @page specified in recipe.", array('@page' => $page['file'])), 'warning');
   }
 }
 
 function _ou_bagit_importer_batches_finished() {
   drush_print('Ingest complete!');
+}
+
+/**
+ * Copies file from path to destination directory.
+ */
+function _ou_bagit_importer_copy($source_uri, $dest_directory, $path) {
+  $file = basename($path);
+  $source = "{$source_uri}/{$path}";
+  if (strpos($path, 'http') === 0) {
+    $source = $path;
+  }
+  $destination = "{$dest_directory}/{$file}";
+  $status = @copy($source, $destination);
+  if ($status) {
+    return $destination;
+  }
 }
 
 function ou_bagit_importer_is_path_remote($path) {
