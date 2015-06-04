@@ -30,6 +30,9 @@ function drush_ou_bagit_importer_import_ou_bag($uri) {
     // Do stuff
     @unlink("{$directory}/{$json_filename}");
   }
+  else {
+    drupal_set_message(t("Could not create directory. You may need to run drush command as sudo"), 'error');
+  }
 }
 
 function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $json_filename) {
