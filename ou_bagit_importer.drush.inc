@@ -22,13 +22,16 @@ function ou_bagit_importer_drush_command() {
 function drush_ou_bagit_importer_import_ou_bag($uri) {
   $pathinfo = pathinfo($uri);
   $json_filename = $pathinfo['basename'];
-  $directory_basename = preg_replace("/[^a-zA-Z0-9]+/", "", $pathinfo['dirname']);
+  $directory_basename = sha1($pathinfo['dirname']);
   $directory = "public://ou_bagit_importer/{$directory_basename}";
   if (file_prepare_directory($directory, FILE_CREATE_DIRECTORY)) {
     @copy($uri, "{$directory}/{$json_filename}");
     ou_bagit_importer_process_json_file($pathinfo['dirname'], $directory, $json_filename);
     // Do stuff
     @unlink("{$directory}/{$json_filename}");
+  }
+  else {
+    drupal_set_message(t("Could not create directory. You may need to run drush command as sudo"), 'error');
   }
 }
 
