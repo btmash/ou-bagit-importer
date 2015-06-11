@@ -47,9 +47,10 @@ function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $js
       $object = array(
         'type' => 'islandora:bookCModel',
         'uuid' => $json_data['recipe']['uuid'],
+        'label' => $json_data['recipe']['label'],
         'metadata' => $metadata,
       );
-      ou_bagit_importer_save_book_collection($object, $json_data);
+      ou_bagit_importer_save_book_collection($object, $json_data['recipe']);
       drupal_set_message(t('Saving book collection @book', array('@book' => $object['uuid'])));
       ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data['recipe']);
     }
@@ -101,6 +102,7 @@ function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $ob
         'file' => $file,
         'exif' => $exif,
         'uuid' => $page['uuid'],
+        'label' => $page['label'],
         'metadata' => $metadata,
       );
       drupal_set_message(t("Page @page will get ingested here", array('@page' => $file)));

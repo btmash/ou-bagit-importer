@@ -24,7 +24,7 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
     $islandora_object = $tuque->repository->constructObject(OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}");
     $islandora_object->id = OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}";
     $islandora_object->state = 'A';
-    $islandora_object->label = $object_array['uuid'];
+    $islandora_object->label = $object_array['label'];
     $islandora_object->ownerId = $user->name;
     foreach ($content_models as $content_model) {
       $islandora_object->relationships->add(FEDORA_MODEL_URI, 'hasModel', $content_model);
@@ -32,7 +32,7 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
     $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $parent_collection);
   } else {
     $islandora_object->state = 'A';
-    $islandora_object->label = $object_array['uuid'];
+    $islandora_object->label = $object_array['label'];
     $islandora_object->ownerId = $user->name;
   }
   $mods_record = ou_bagit_importer_run_xslt_transform(array(
@@ -93,7 +93,7 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
     $islandora_object = $tuque->repository->constructObject($uuid);
     $islandora_object->id = $uuid;
     $islandora_object->state = 'A';
-    $islandora_object->label = $object_array['uuid'];
+    $islandora_object->label = $object_array['label'];
     $islandora_object->ownerId = $user->name;
     foreach ($content_models as $content_model) {
       $islandora_object->relationships->add(FEDORA_MODEL_URI, 'hasModel', $content_model);
@@ -105,7 +105,7 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
     $islandora_object->relationships->add(ISLANDORA_RELS_EXT_URI, 'isSection', '1');
   } else {
     $islandora_object->state = 'A';
-    $islandora_object->label = $object_array['uuid'];
+    $islandora_object->label = $object_array['label'];
     $islandora_object->ownerId = $user->name;
   }
   $finfo = finfo_open(FILEINFO_MIME_TYPE);
