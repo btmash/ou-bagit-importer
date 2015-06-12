@@ -36,7 +36,7 @@ function drush_ou_bagit_importer_import_ou_bag() {
   $pathinfo = pathinfo($uri);
   $json_filename = $pathinfo['basename'];
   $directory_basename = sha1($pathinfo['dirname']);
-  $directory = drush_get_option('tmp_dir', "public://ou_bagit_importer/{$directory_basename}");
+  $directory = drush_get_option('tmp_dir', "tmp://ou_bagit_importer/{$directory_basename}");
   if (file_prepare_directory($directory, FILE_CREATE_DIRECTORY)) {
     @copy($uri, "{$directory}/{$json_filename}");
     ou_bagit_importer_process_json_file($pathinfo['dirname'], $directory, $json_filename, $parent_collection);
