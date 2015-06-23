@@ -11,22 +11,35 @@ function ou_bagit_importer_drush_command() {
     'aliases' => array('oubib'),
     'description' => 'Import an OU bag from a stream',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
-    'arguments' => array(
-      'uri' => 'Location (local or remote) to the bag directory JSON',
+    'options' => array(
+      'recipe_uri' => array(
+        'description' => 'Path to recipe file (can be local or remote)',
+        'required' => TRUE,
+      ),
+      'parent_collection' => array(
+        'description' => 'Parent collection recipe will be imported into',
+        'required' => TRUE,
+      ),
+      'tmp_dir' => array(
+        'description' => 'Path to tmp downloaded files (will be in public files directory by default)',
+        'required' => FALSE,
+      ),
     ),
   );
 
   return $items;
 }
 
-function drush_ou_bagit_importer_import_ou_bag($uri) {
+function drush_ou_bagit_importer_import_ou_bag() {
+  $uri = drush_get_option('recipe_uri');
+  $parent_collection = drush_get_option('parent_collection');
   $pathinfo = pathinfo($uri);
   $json_filename = $pathinfo['basename'];
   $directory_basename = sha1($pathinfo['dirname']);
-  $directory = "public://ou_bagit_importer/{$directory_basename}";
+  $directory = drush_get_option('tmp_dir', "tmp://ou_bagit_importer/{$directory_basename}");
   if (file_prepare_directory($directory, FILE_CREATE_DIRECTORY)) {
     @copy($uri, "{$directory}/{$json_filename}");
-    ou_bagit_importer_process_json_file($pathinfo['dirname'], $directory, $json_filename);
+    ou_bagit_importer_process_json_file($pathinfo['dirname'], $directory, $json_filename, $parent_collection);
     // Do stuff
     @unlink("{$directory}/{$json_filename}");
   }
@@ -35,7 +48,7 @@ function drush_ou_bagit_importer_import_ou_bag($uri) {
   }
 }
 
-function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $json_filename) {
+function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $json_filename, $parent_collection) {
   $json_data = drupal_json_decode(file_get_contents("{$drupal_directory}/{$json_filename}"));
   if ($json_data) {
     $type = $json_data['recipe']['import'];
@@ -50,7 +63,7 @@ function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $js
         'label' => $json_data['recipe']['label'],
         'metadata' => $metadata,
       );
-      ou_bagit_importer_save_book_collection($object, $json_data['recipe']);
+      ou_bagit_importer_save_book_collection($object, $json_data['recipe'], $parent_collection);
       drupal_set_message(t('Saving book collection @book', array('@book' => $object['uuid'])));
       ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data['recipe']);
     }
