@@ -19,6 +19,10 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe) {
     drupal_set_message('Book collection object exists');
     return;
   }
+  else if ($islandora_object) {
+    islandora_delete_object($islandora_object);
+    $islandora_object = NULL;
+  }
   // Set up islandora object
   if (!$islandora_object) {
     $islandora_object = $tuque->repository->constructObject(OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}");
@@ -88,6 +92,10 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
   if ($islandora_object && !$update) {
     drupal_set_message('Book page object exists');
     return;
+  }
+  else if ($islandora_object) {
+    islandora_delete_object($islandora_object);
+    $islandora_object = NULL;
   }
   if (!$islandora_object) {
     $islandora_object = $tuque->repository->constructObject($uuid);
