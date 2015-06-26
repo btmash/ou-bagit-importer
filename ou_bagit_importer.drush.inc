@@ -11,31 +11,49 @@ function ou_bagit_importer_drush_command() {
     'aliases' => array('oubib'),
     'description' => 'Import an OU bag from a stream',
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
-    'arguments' => array(
-      'uri' => 'Location (local or remote) to the bag directory JSON',
+    'options' => array(
+      'recipe_uri' => array(
+        'description' => 'Path to recipe file (can be local or remote)',
+        'required' => TRUE,
+      ),
+      'parent_collection' => array(
+        'description' => 'Parent collection recipe will be imported into',
+        'required' => TRUE,
+      ),
+      'tmp_dir' => array(
+        'description' => 'Path to tmp downloaded files (will be in public files directory by default)',
+        'required' => FALSE,
+      ),
     ),
   );
 
   return $items;
 }
 
-function drush_ou_bagit_importer_import_ou_bag($uri) {
+function drush_ou_bagit_importer_import_ou_bag() {
+  $uri = drush_get_option('recipe_uri');
+  $parent_collection = drush_get_option('parent_collection');
+
+  $file_data = drupal_json_decode(file_get_contents($uri));
+  if (!$file_data) {
+    drupal_set_message(t("Could not download recipe."));
+  }
+  $directory_basename = $file_data['recipe']['uuid'];
+  $directory = drush_get_option('tmp_dir', "tmp://ou_bagit_importer/{$directory_basename}");
+
   $pathinfo = pathinfo($uri);
   $json_filename = $pathinfo['basename'];
-  $directory_basename = sha1($pathinfo['dirname']);
-  $directory = "public://ou_bagit_importer/{$directory_basename}";
   if (file_prepare_directory($directory, FILE_CREATE_DIRECTORY)) {
+    drupal_set_message(t("TMP files can be found (and removed manually) at %directory", array('%directory' => $directory)));
     @copy($uri, "{$directory}/{$json_filename}");
-    ou_bagit_importer_process_json_file($pathinfo['dirname'], $directory, $json_filename);
-    // Do stuff
-    @unlink("{$directory}/{$json_filename}");
+    ou_bagit_importer_process_json_file($pathinfo['dirname'], $directory, $json_filename, $parent_collection);
   }
   else {
     drupal_set_message(t("Could not create directory. You may need to run drush command as sudo"), 'error');
   }
 }
 
-function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $json_filename) {
+function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $json_filename, $parent_collection) {
   $json_data = drupal_json_decode(file_get_contents("{$drupal_directory}/{$json_filename}"));
   if ($json_data) {
     $type = $json_data['recipe']['import'];
@@ -47,9 +65,10 @@ function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $js
       $object = array(
         'type' => 'islandora:bookCModel',
         'uuid' => $json_data['recipe']['uuid'],
+        'label' => $json_data['recipe']['label'],
         'metadata' => $metadata,
       );
-      ou_bagit_importer_save_book_collection($object, $json_data);
+      ou_bagit_importer_save_book_collection($object, $json_data['recipe'], $parent_collection);
       drupal_set_message(t('Saving book collection @book', array('@book' => $object['uuid'])));
       ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data['recipe']);
     }
@@ -89,7 +108,7 @@ function ou_bagit_importer_process_json_book_pages($source_uri, $drupal_director
 }
 
 function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $object, $page_number, $page, $json_data) {
-  $file = _ou_bagit_importer_copy($source_uri, $drupal_directory, $page['file']);
+  $file = _ou_bagit_importer_copy($source_uri, $drupal_directory, $page['file'], $page['sha1']);
   $exif = _ou_bagit_importer_copy($source_uri, $drupal_directory, $page['exif']);
   if ($file) {
     $file_hash = md5_file($file);
@@ -101,6 +120,7 @@ function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $ob
         'file' => $file,
         'exif' => $exif,
         'uuid' => $page['uuid'],
+        'label' => $page['label'],
         'metadata' => $metadata,
       );
       drupal_set_message(t("Page @page will get ingested here", array('@page' => $file)));
@@ -109,8 +129,6 @@ function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $ob
     else {
       drupal_set_message(t("Page @page hash does not match hash in recipe.", array('@page' => $file)), 'warning');
     }
-    @unlink($file);
-    @unlink($exif);
   }
   else {
     drupal_set_message(t("Could not find @page specified in recipe.", array('@page' => $page['file'])), 'warning');
@@ -124,13 +142,16 @@ function _ou_bagit_importer_batches_finished() {
 /**
  * Copies file from path to destination directory.
  */
-function _ou_bagit_importer_copy($source_uri, $dest_directory, $path) {
+function _ou_bagit_importer_copy($source_uri, $dest_directory, $path, $hash = "") {
   $file = basename($path);
   $source = "{$source_uri}/{$path}";
   if (strpos($path, 'http') === 0) {
     $source = $path;
   }
   $destination = "{$dest_directory}/{$file}";
+  if (file_exists($destination) && md5_file($destination) == $hash) {
+    return $destination;
+  }
   $status = @copy($source, $destination);
   if ($status) {
     return $destination;
