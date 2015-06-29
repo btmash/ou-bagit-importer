@@ -39,7 +39,7 @@ function drush_ou_bagit_importer_import_ou_bag() {
     drupal_set_message(t("Could not download recipe."));
   }
   $directory_basename = $file_data['recipe']['uuid'];
-  $directory = drush_get_option('tmp_dir', "tmp://ou_bagit_importer/{$directory_basename}");
+  $directory = drush_get_option('tmp_dir', "temporary://ou_bagit_importer/{$directory_basename}");
 
   $pathinfo = pathinfo($uri);
   $json_filename = $pathinfo['basename'];
