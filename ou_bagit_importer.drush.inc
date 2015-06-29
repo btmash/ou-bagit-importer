@@ -39,7 +39,7 @@ function drush_ou_bagit_importer_import_ou_bag() {
     drupal_set_message(t("Could not download recipe."));
   }
   $directory_basename = $file_data['recipe']['uuid'];
-  $directory = drush_get_option('tmp_dir', "tmp://ou_bagit_importer/{$directory_basename}");
+  $directory = drush_get_option('tmp_dir', "temporary://ou_bagit_importer/{$directory_basename}");
 
   $pathinfo = pathinfo($uri);
   $json_filename = $pathinfo['basename'];
@@ -147,6 +147,10 @@ function _ou_bagit_importer_copy($source_uri, $dest_directory, $path, $hash = ""
   $source = "{$source_uri}/{$path}";
   if (strpos($path, 'http') === 0) {
     $source = $path;
+  }
+  // Idea: Use source so we're not copying the file and reduce disk I/O
+  if (!ou_bagit_importer_is_path_remote($source)) {
+    return $source;
   }
   $destination = "{$dest_directory}/{$file}";
   if (file_exists($destination) && md5_file($destination) == $hash) {

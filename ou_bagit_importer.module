@@ -46,7 +46,6 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe, $pa
     'input' => $mods_record,
     'xsl' => drupal_get_path('module', 'islandora_batch') . '/transforms/mods_to_dc.xsl',
   ));
-  $finfo = finfo_open(FILEINFO_MIME_TYPE);
   $datastreams = array(
     'MODS' => array(
       'type' => 'text/xml',
@@ -55,13 +54,16 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe, $pa
     'DC' => array(
       'type' => 'text/xml',
       'content' => $dc_record,
-    ),
-    'OBJ' => array(
+    )
+  );
+  if (!empty($object_array['metadata']['thumbnail'])) {
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $datastreams['OBJ'] = array(
       'type' => finfo_file($finfo, drupal_realpath($object_array['metadata']['thumbnail'])),
       'content' => file_get_contents($object_array['metadata']['thumbnail']),
-    ),
-  );
-  finfo_close($finfo);
+    );
+    finfo_close($finfo);
+  }
   foreach ($datastreams as $key => $value) {
     if (!$islandora_object[$key]) {
       $ds = $islandora_object->constructDatastream($key);
@@ -115,18 +117,21 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
     $islandora_object->label = $object_array['label'];
     $islandora_object->ownerId = $user->name;
   }
-  $finfo = finfo_open(FILEINFO_MIME_TYPE);
-  $datastreams = array(
-    'OBJ' => array(
+  $datastreams = array();
+  if (!empty($object_array['file'])) {
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $datastreams['OBJ'] = array(
       'type' => finfo_file($finfo, drupal_realpath($object_array['file'])),
       'content' => file_get_contents($object_array['file']),
-    ),
-    'EXIF' => array(
+    );
+    finfo_close($finfo);
+  }
+  if (!empty($object_array['exif'])) {
+    $datastreams['EXIF'] = array(
       'type' => 'text/plain',
       'content' => file_get_contents($object_array['exif']),
-    )
-  );
-  finfo_close($finfo);
+    );
+  }
   foreach ($datastreams as $key => $value) {
     if (!$islandora_object[$key]) {
       $ds = $islandora_object->constructDatastream($key);
