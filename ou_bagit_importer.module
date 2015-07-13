@@ -14,13 +14,13 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe, $pa
     $object_array['type'],
     'fedora-system:FedoraObject-3.0',
   );
+  $new = TRUE;
   if ($islandora_object && !$update) {
     drupal_set_message('Book collection object exists');
     return;
   }
   else if ($islandora_object) {
-    islandora_delete_object($islandora_object);
-    $islandora_object = NULL;
+    $new = FALSE;
   }
   // Set up islandora object
   if (!$islandora_object) {
@@ -67,16 +67,25 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe, $pa
   foreach ($datastreams as $key => $value) {
     if (!$islandora_object[$key]) {
       $ds = $islandora_object->constructDatastream($key);
-    } else {
-      $ds = $islandora_object[$key];
+      $ds->label = $key;
+      $ds->mimetype = $value['type'];
+      $ds->control_group = 'M';
+      $ds->setContentFromString($value['content']);
+      $islandora_object->ingestDatastream($ds);
     }
-    $ds->label = $key;
-    $ds->mimetype = $value['type'];
-    $ds->control_group = 'M';
-    $ds->setContentFromString($value['content']);
-    $islandora_object->ingestDatastream($ds);
+    else {
+      $ds = $islandora_object[$key];
+      if (md5($ds->getContent()) == md5($value['content'])) {
+        $ds->label = $key;
+        $ds->mimetype = $value['type'];
+        $ds->control_group = 'M';
+        $ds->setContentFromString($value['content']);
+      }
+    }
   }
-  islandora_add_object($islandora_object);
+  if ($new) {
+    islandora_add_object($islandora_object);
+  }
 }
 
 /**
@@ -90,13 +99,13 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
   $content_models = array(
     $object_array['type'],
   );
+  $new = TRUE;
   if ($islandora_object && !$update) {
     drupal_set_message('Book page object exists');
     return;
   }
   else if ($islandora_object) {
-    islandora_delete_object($islandora_object);
-    $islandora_object = NULL;
+    $new = FALSE;
   }
   if (!$islandora_object) {
     $islandora_object = $tuque->repository->constructObject($uuid);
@@ -141,8 +150,19 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
       $ds->setContentFromString($value['content']);
       $islandora_object->ingestDatastream($ds);
     }
+    else {
+      $ds = $islandora_object[$key];
+      if (md5($ds->getContent()) == md5($value['content'])) {
+        $ds->label = $key;
+        $ds->mimetype = $value['type'];
+        $ds->control_group = 'M';
+        $ds->setContentFromString($value['content']);
+      }
+    }
   }
-  islandora_add_object($islandora_object);
+  if ($new) {
+    islandora_add_object($islandora_object);
+  }
 }
 
 function ou_bagit_importer_run_xslt_transform($info) {
