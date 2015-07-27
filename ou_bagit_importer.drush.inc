@@ -68,7 +68,8 @@ function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $js
         'label' => $json_data['recipe']['label'],
         'metadata' => $metadata,
       );
-      ou_bagit_importer_save_book_collection($object, $json_data['recipe'], $parent_collection);
+      $result = ou_bagit_importer_save_book_collection($object, $json_data['recipe'], $parent_collection);
+      _ou_bagit_importer_write_results("{$drupal_directory}/results.json", $result, TRUE);
       drupal_set_message(t('Saving book collection @book', array('@book' => $object['uuid'])));
       ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data['recipe']);
     }
@@ -124,14 +125,27 @@ function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $ob
         'metadata' => $metadata,
       );
       drupal_set_message(t("Page @page will get ingested here", array('@page' => $file)));
-      ou_bagit_importer_save_book_page($object, $json_data);
+      $result = ou_bagit_importer_save_book_page($object, $json_data);
     }
     else {
+      $result = array(
+        'object' => $json_data['uuid'],
+        'result' => FALSE,
+        'message' => t("Page @page hash does not match hash in recipe.", array('@page' => $file)),
+      );
       drupal_set_message(t("Page @page hash does not match hash in recipe.", array('@page' => $file)), 'warning');
     }
   }
   else {
+    $result = array(
+      'object' => $json_data['uuid'],
+      'result' => FALSE,
+      'message' => t("Could not find @page specified in recipe.", array('@page' => $page['file'])),
+    );
     drupal_set_message(t("Could not find @page specified in recipe.", array('@page' => $page['file'])), 'warning');
+  }
+  if ($result) {
+    _ou_bagit_importer_write_results("{$drupal_directory}/results.json", $result);
   }
 }
 
@@ -162,6 +176,9 @@ function _ou_bagit_importer_copy($source_uri, $dest_directory, $path, $hash = ""
   }
 }
 
+/**
+ * Checks if the path to bag is remote or local
+ */
 function ou_bagit_importer_is_path_remote($path) {
     $host = parse_url($path, PHP_URL_HOST);
     if ($host === NULL) {
@@ -169,4 +186,16 @@ function ou_bagit_importer_is_path_remote($path) {
     } else {
         return true;
     }
+}
+
+/**
+ * Writes result to file.
+ */
+function _ou_bagit_importer_write_results($filename, $result, $overwrite = FALSE) {
+  $results = array();
+  if ($overwrite) {
+    $results = drupal_json_decode(file_get_contents($filename));
+  }
+  $results[$result['object']] = $result;
+  file_put_contents($filename, drupal_json_encode($results));
 }

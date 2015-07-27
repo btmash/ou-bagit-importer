@@ -17,7 +17,11 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe, $pa
   $new = TRUE;
   if ($islandora_object && !$update) {
     drupal_set_message('Book collection object exists');
-    return;
+    return array(
+      'object' => $object_array['uuid'],
+      'result' => FALSE,
+      'message' => 'Book collection object exists',
+    );
   }
   else if ($islandora_object) {
     $new = FALSE;
@@ -86,6 +90,11 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe, $pa
   if ($new) {
     islandora_add_object($islandora_object);
   }
+  return array(
+    'object' => $islandora_object->id,
+    'result' => TRUE,
+    'message' => 'Successfully ingested/updated',
+  );
 }
 
 /**
@@ -102,7 +111,11 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
   $new = TRUE;
   if ($islandora_object && !$update) {
     drupal_set_message('Book page object exists');
-    return;
+    return array(
+      'object' => $object_array['uuid'],
+      'result' => FALSE,
+      'message' => 'Book page object exists',
+    );
   }
   else if ($islandora_object) {
     $new = FALSE;
@@ -163,6 +176,11 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
   if ($new) {
     islandora_add_object($islandora_object);
   }
+  return array(
+    'object' => $islandora_object->id,
+    'result' => TRUE,
+    'message' => 'Successfully ingested/updated',
+  );
 }
 
 function ou_bagit_importer_run_xslt_transform($info) {
