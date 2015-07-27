@@ -107,7 +107,7 @@ function ou_bagit_importer_process_json_book_pages($source_uri, $drupal_director
   batch_set($batch);
 }
 
-function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $object, $page_number, $page, $json_data) {
+function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $object, $page_number, $page, $json_data, &$context) {
   $file = _ou_bagit_importer_copy($source_uri, $drupal_directory, $page['file'], $page['sha1']);
   $exif = _ou_bagit_importer_copy($source_uri, $drupal_directory, $page['exif']);
   if ($file) {
@@ -135,7 +135,7 @@ function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $ob
   }
 }
 
-function _ou_bagit_importer_batches_finished() {
+function _ou_bagit_importer_batches_finished($success, $results, $operations) {
   drush_print('Ingest complete!');
 }
 
