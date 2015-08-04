@@ -155,6 +155,7 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
     );
   }
 
+  // Capture the MODS, DC data.
   $physical_desc_data = '';
   $copyright_data = 'Physical rights are retained by University of Oklahoma. Copyright is retained in accordance with U.S. copyright laws.';
   $mods_record = _ou_bagit_importer_generate_book_page_mods($islandora_object->label, $physical_desc_data, $copyright_data);
@@ -235,4 +236,5 @@ function _ou_bagit_importer_generate_book_page_mods($label, $physical_desc_data 
     $mods .= "<accessCondition type='use and reproduction'>{$copyright_data}</accessCondition>";
   }
   $mods .= "</mods>";
+  return $mods;
 }
