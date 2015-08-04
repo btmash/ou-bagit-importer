@@ -111,6 +111,7 @@ function ou_bagit_importer_process_json_book_pages($source_uri, $drupal_director
 function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $object, $page_number, $page, $json_data, &$context) {
   $file = _ou_bagit_importer_copy($source_uri, $drupal_directory, $page['file'], $page['sha1']);
   $exif = _ou_bagit_importer_copy($source_uri, $drupal_directory, $page['exif']);
+  $result = array();
   if ($file) {
     $file_hash = md5_file($file);
     if ($file_hash == $page['sha1']) {
@@ -144,7 +145,7 @@ function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $ob
     );
     drupal_set_message(t("Could not find @page specified in recipe.", array('@page' => $page['file'])), 'warning');
   }
-  if ($result) {
+  if (!empty($result)) {
     _ou_bagit_importer_write_results("{$drupal_directory}/results.json", $result);
   }
 }

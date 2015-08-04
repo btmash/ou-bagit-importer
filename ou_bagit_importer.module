@@ -79,7 +79,7 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe, $pa
     }
     else {
       $ds = $islandora_object[$key];
-      if (md5($ds->content) == md5($value['content'])) {
+      if (md5($ds->content) != md5($value['content'])) {
         $ds->label = $key;
         $ds->mimetype = $value['type'];
         $ds->control_group = 'M';
@@ -183,7 +183,7 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
     }
     else {
       $ds = $islandora_object[$key];
-      if (md5($ds->content) == md5($value['content'])) {
+      if (md5($ds->content) != md5($value['content'])) {
         $ds->label = $key;
         $ds->mimetype = $value['type'];
         $ds->control_group = 'M';
