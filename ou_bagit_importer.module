@@ -163,7 +163,10 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
     'input' => $mods_record,
     'xsl' => drupal_get_path('module', 'islandora_batch') . '/transforms/mods_to_dc.xsl',
   ));
-  var_dump($dc_record);
+  $datastreams['DC'] = array(
+    'type' => 'text/xml',
+    'content' => $dc_record,
+  );
   $datastreams['MODS'] = array(
     'type' => 'text/xml',
     'content' => $mods_record,
