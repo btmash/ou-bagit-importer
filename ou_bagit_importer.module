@@ -51,14 +51,14 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe, $pa
     'xsl' => drupal_get_path('module', 'islandora_batch') . '/transforms/mods_to_dc.xsl',
   ));
   $datastreams = array(
+    'DC' => array(
+      'type' => 'text/xml',
+      'content' => $dc_record,
+    ),
     'MODS' => array(
       'type' => 'text/xml',
       'content' => $mods_record,
     ),
-    'DC' => array(
-      'type' => 'text/xml',
-      'content' => $dc_record,
-    )
   );
   if (!empty($object_array['metadata']['thumbnail'])) {
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -154,6 +154,23 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
       'content' => file_get_contents($object_array['exif']),
     );
   }
+
+  $physical_desc_data = '';
+  $copyright_data = 'Physical rights are retained by University of Oklahoma. Copyright is retained in accordance with U.S. copyright laws.';
+  $mods_record = _ou_bagit_importer_generate_book_page_mods($islandora_object->label, $physical_desc_data, $copyright_data);
+  $dc_record = ou_bagit_importer_run_xslt_transform(array(
+    'input' => $mods_record,
+    'xsl' => drupal_get_path('module', 'islandora_batch') . '/transforms/mods_to_dc.xsl',
+  ));
+  $datastreams['DC'] = array(
+    'type' => 'text/xml',
+    'content' => $dc_record,
+  );
+  $datastreams['MODS'] = array(
+    'type' => 'text/xml',
+    'content' => $mods_record,
+  );
+
   foreach ($datastreams as $key => $value) {
     if (!$islandora_object[$key]) {
       $ds = $islandora_object->constructDatastream($key);
@@ -183,6 +200,9 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
   );
 }
 
+/**
+ * Runs xslt transform on xml data.
+ */
 function ou_bagit_importer_run_xslt_transform($info) {
   $xsl = new DOMDocument();
   $xsl->load($info['xsl']);
@@ -199,4 +219,20 @@ function ou_bagit_importer_run_xslt_transform($info) {
 
   // XXX: Suppressing warnings regarding unregistered prefixes.
   return $processor->transformToXML($input);
+}
+
+/**
+ * Generate mods content for a book page.
+ */
+function _ou_bagit_importer_generate_book_page_mods($label, $physical_desc_data = NULL, $copyright_data = NULL) {
+  $mods = "<mods>";
+  $mods .= "<titleInfo><title>{$label}</title><subTitle/></titleInfo>";
+  if (!empty($physical_desc_data)) {
+    // Do something
+    $mods .= "";
+  }
+  if (!empty($copyright_data)) {
+    $mods .= "<accessCondition type='use and reproduction'>{$copyright_data}</accessCondition>";
+  }
+  $mods .= "</mods>";
 }
