@@ -223,7 +223,8 @@ function ou_bagit_importer_run_xslt_transform($info) {
  * Generate mods content for a book page.
  */
 function _ou_bagit_importer_generate_book_page_mods($label, $physical_desc_data = NULL, $copyright_data = NULL) {
-  $mods = "<mods>";
+  $mods = '<?xml version="1.0"?>';
+  $mods .= '<mods xmlns="http://www.loc.gov/mods/v3" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink">';
   $mods .= "<titleInfo><title>{$label}</title><subTitle/></titleInfo>";
   if (!empty($physical_desc_data)) {
     // Do something
