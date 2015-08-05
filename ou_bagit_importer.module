@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @file
+ */
+
 define('OU_BAGIT_IMPORTER_OBJECT_NAMESPACE', 'islandora');
 
 /**
@@ -23,10 +27,10 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe, $pa
       'message' => 'Book collection object exists',
     );
   }
-  else if ($islandora_object) {
+  elseif ($islandora_object) {
     $new = FALSE;
   }
-  // Set up islandora object
+  // Set up islandora object.
   if (!$islandora_object) {
     $islandora_object = $tuque->repository->constructObject(OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}");
     $islandora_object->id = OU_BAGIT_IMPORTER_OBJECT_NAMESPACE . ":{$object_array['uuid']}";
@@ -37,7 +41,8 @@ function ou_bagit_importer_save_book_collection($object_array, $json_recipe, $pa
       $islandora_object->relationships->add(FEDORA_MODEL_URI, 'hasModel', $content_model);
     }
     $islandora_object->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOfCollection', $parent_collection);
-  } else {
+  }
+  else {
     $islandora_object->state = 'A';
     $islandora_object->label = $object_array['label'];
     $islandora_object->ownerId = $user->name;
@@ -117,7 +122,7 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
       'message' => 'Book page object exists',
     );
   }
-  else if ($islandora_object) {
+  elseif ($islandora_object) {
     $new = FALSE;
   }
   if (!$islandora_object) {
@@ -134,7 +139,8 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
     $islandora_object->relationships->add(ISLANDORA_RELS_EXT_URI, 'isSequenceNumber', $object_array['page_number']);
     $islandora_object->relationships->add(ISLANDORA_RELS_EXT_URI, 'isPageNumber', $object_array['page_number']);
     $islandora_object->relationships->add(ISLANDORA_RELS_EXT_URI, 'isSection', '1');
-  } else {
+  }
+  else {
     $islandora_object->state = 'A';
     $islandora_object->label = $object_array['label'];
     $islandora_object->ownerId = $user->name;
@@ -230,7 +236,7 @@ function _ou_bagit_importer_generate_book_page_mods($label, $physical_desc_data 
   $mods .= '<mods xmlns="http://www.loc.gov/mods/v3" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink">';
   $mods .= "<titleInfo><title>{$label}</title><subTitle/></titleInfo>";
   if (!empty($physical_desc_data)) {
-    // Do something
+    // Do something.
     $mods .= "";
   }
   if (!empty($copyright_data)) {
