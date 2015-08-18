@@ -109,42 +109,23 @@ function ou_bagit_importer_process_json_book_pages($source_uri, $drupal_director
 }
 
 function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $object, $page_number, $page, $json_data, &$context) {
-  $file = _ou_bagit_importer_copy($source_uri, $drupal_directory, $page['file'], $page['sha1']);
-  $exif = _ou_bagit_importer_copy($source_uri, $drupal_directory, $page['exif']);
   $result = array();
-  if ($file) {
-    $file_hash = md5_file($file);
-    if ($file_hash == $page['sha1']) {
-      $object = array(
-        'type' => 'islandora:pageCModel',
-        'book' => $json_data['uuid'],
-        'page_number' => $page_number,
-        'file' => $file,
-        'exif' => $exif,
-        'uuid' => $page['uuid'],
-        'label' => $page['label'],
-        'metadata' => $metadata,
-      );
-      drupal_set_message(t("Page @page will get ingested here", array('@page' => $file)));
-      $result = ou_bagit_importer_save_book_page($object, $json_data);
-    }
-    else {
-      $result = array(
-        'object' => $json_data['uuid'],
-        'result' => FALSE,
-        'message' => t("Page @page hash does not match hash in recipe.", array('@page' => $file)),
-      );
-      drupal_set_message(t("Page @page hash does not match hash in recipe.", array('@page' => $file)), 'warning');
-    }
-  }
-  else {
-    $result = array(
-      'object' => $json_data['uuid'],
-      'result' => FALSE,
-      'message' => t("Could not find @page specified in recipe.", array('@page' => $page['file'])),
-    );
-    drupal_set_message(t("Could not find @page specified in recipe.", array('@page' => $page['file'])), 'warning');
-  }
+  $object = array(
+    'source_uri' => $source_uri,
+    'drupal_directory' => $drupal_directory,
+    'file' => $page['file'],
+    'hash' => $page['sha1'],
+    'exif' => $page['exif'],
+    'type' => 'islandora:pageCModel',
+    'book' => $json_data['uuid'],
+    'page_number' => $page_number,
+    'uuid' => $page['uuid'],
+    'label' => $page['label'],
+    'metadata' => $metadata,
+  );
+  drupal_set_message(t("Page @page will get ingested here", array('@page' => $file)));
+  $result = ou_bagit_importer_save_book_page($object, $json_data);
+
   if (!empty($result)) {
     _ou_bagit_importer_write_results("{$drupal_directory}/results.json", $result);
   }
