@@ -1,6 +1,10 @@
 <?php
 
 /**
+ * @file
+ */
+
+/**
  * Implements hook_drush_command().
  */
 function ou_bagit_importer_drush_command() {
@@ -30,6 +34,9 @@ function ou_bagit_importer_drush_command() {
   return $items;
 }
 
+/**
+ *
+ */
 function drush_ou_bagit_importer_import_ou_bag() {
   $uri = drush_get_option('recipe_uri');
   $parent_collection = drush_get_option('parent_collection');
@@ -53,6 +60,9 @@ function drush_ou_bagit_importer_import_ou_bag() {
   }
 }
 
+/**
+ *
+ */
 function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $json_filename, $parent_collection) {
   $json_data = drupal_json_decode(file_get_contents("{$drupal_directory}/{$json_filename}"));
   if ($json_data) {
@@ -83,6 +93,9 @@ function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $js
   }
 }
 
+/**
+ *
+ */
 function ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data) {
   $batch = array(
     'operations' => array(),
@@ -108,6 +121,9 @@ function ou_bagit_importer_process_json_book_pages($source_uri, $drupal_director
   batch_set($batch);
 }
 
+/**
+ *
+ */
 function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $object, $page_number, $page, $json_data, &$context) {
   $result = array();
   $object = array(
@@ -131,6 +147,9 @@ function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $ob
   }
 }
 
+/**
+ *
+ */
 function _ou_bagit_importer_batches_finished($success, $results, $operations) {
   drush_print('Ingest complete!');
 }
@@ -159,15 +178,16 @@ function _ou_bagit_importer_copy($source_uri, $dest_directory, $path, $hash = ""
 }
 
 /**
- * Checks if the path to bag is remote or local
+ * Checks if the path to bag is remote or local.
  */
 function ou_bagit_importer_is_path_remote($path) {
-    $host = parse_url($path, PHP_URL_HOST);
-    if ($host === NULL) {
-        return false;
-    } else {
-        return true;
-    }
+  $host = parse_url($path, PHP_URL_HOST);
+  if ($host === NULL) {
+    return FALSE;
+  }
+  else {
+    return TRUE;
+  }
 }
 
 /**
