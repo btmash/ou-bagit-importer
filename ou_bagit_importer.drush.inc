@@ -155,29 +155,6 @@ function _ou_bagit_importer_batches_finished($success, $results, $operations) {
 }
 
 /**
- * Copies file from path to destination directory.
- */
-function _ou_bagit_importer_copy($source_uri, $dest_directory, $path, $hash = "") {
-  $file = basename($path);
-  $source = "{$source_uri}/{$path}";
-  if (strpos($path, 'http') === 0) {
-    $source = $path;
-  }
-  // Idea: Use source so we're not copying the file and reduce disk I/O
-  if (!ou_bagit_importer_is_path_remote($source)) {
-    return $source;
-  }
-  $destination = "{$dest_directory}/{$file}";
-  if (file_exists($destination) && md5_file($destination) == $hash) {
-    return $destination;
-  }
-  $status = @copy($source, $destination);
-  if ($status) {
-    return $destination;
-  }
-}
-
-/**
  * Checks if the path to bag is remote or local.
  */
 function ou_bagit_importer_is_path_remote($path) {
