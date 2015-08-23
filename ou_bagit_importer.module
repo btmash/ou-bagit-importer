@@ -163,7 +163,7 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
     // Check if the OBJ datastream needs to be created.
     if (!empty($islandora_object['OBJ']) && md5($islandora_object['OBJ']->content === $object_array['hash'])) {
       // Do nothing for now.
-    } else if ($object_file = _ou_bagit_importer_copy($object_array('source_uri'), $object_array['drupal_directory'], $object_array['file'], $object_array['hash'])) {
+    } else if ($object_file = _ou_bagit_importer_copy($object_array['source_uri'], $object_array['drupal_directory'], $object_array['file'], $object_array['hash'])) {
       // Make sure that object file hash matches hash from recipe.
       if (md5_file($object_file) !== $object_array['hash']) {
         return array(
@@ -189,7 +189,7 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
   }
   if (!empty($object_array['exif'])) {
     // Create a copy of the exif file since we are dealing with relative links.
-    $exif_file = _ou_bagit_importer_copy($object_array('source_uri'), $object_array['drupal_directory'], $object_array['exif']);
+    $exif_file = _ou_bagit_importer_copy($object_array['source_uri'], $object_array['drupal_directory'], $object_array['exif']);
     $datastreams['EXIF'] = array(
       'type' => 'text/plain',
       'content' => file_get_contents($exif_file),
