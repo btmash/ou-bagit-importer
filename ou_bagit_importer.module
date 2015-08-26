@@ -159,6 +159,7 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
     $islandora_object->ownerId = $user->name;
   }
   $datastreams = array();
+  $physical_desc_data = '';
   if (!empty($object_array['file'])) {
     // Check if the OBJ datastream needs to be created.
     if (!empty($islandora_object['OBJ']) && md5($islandora_object['OBJ']->content === $object_array['hash'])) {
@@ -172,6 +173,8 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
           'message' => t("Page @page hash does not match hash in recipe.", array('@page' => $object_array['file'])),
         );
       }
+      getimagesize($object_file, $iptc_info);
+      dpm($iptc_info);
       $finfo = finfo_open(FILEINFO_MIME_TYPE);
       $datastreams['OBJ'] = array(
         'type' => finfo_file($finfo, drupal_realpath($object_file)),
@@ -214,6 +217,13 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
   );
 
   foreach ($datastreams as $key => $value) {
+    // Just delete the datastream instead of trying to update it
+    if ($islandora_object[$key]) {
+      $ds = $islandora_object[$key];
+      if (md5($ds->content) != md5($value['content'])) {
+        islandora_delete_datastream($islandora_object[$key]);
+      }
+    }
     if (!$islandora_object[$key]) {
       $ds = $islandora_object->constructDatastream($key);
       $ds->label = $key;
@@ -221,16 +231,6 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
       $ds->control_group = 'M';
       $ds->setContentFromString($value['content']);
       $islandora_object->ingestDatastream($ds);
-    }
-    else {
-      $ds = $islandora_object[$key];
-      // Only update if the datastream has changed.
-      if (md5($ds->content) != md5($value['content'])) {
-        $ds->label = $key;
-        $ds->mimetype = $value['type'];
-        $ds->control_group = 'M';
-        $ds->setContentFromString($value['content']);
-      }
     }
   }
 
