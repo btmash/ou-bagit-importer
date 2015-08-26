@@ -217,13 +217,6 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
   );
 
   foreach ($datastreams as $key => $value) {
-    // Just delete the datastream instead of trying to update it
-    if ($islandora_object[$key]) {
-      $ds = $islandora_object[$key];
-      if (md5($ds->content) != md5($value['content'])) {
-        islandora_delete_datastream($islandora_object[$key]);
-      }
-    }
     if (!$islandora_object[$key]) {
       $ds = $islandora_object->constructDatastream($key);
       $ds->label = $key;
@@ -231,6 +224,16 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
       $ds->control_group = 'M';
       $ds->setContentFromString($value['content']);
       $islandora_object->ingestDatastream($ds);
+    }
+    else {
+      $ds = $islandora_object[$key];
+      // Only update if the datastream has changed.
+      if (md5($ds->content) != md5($value['content'])) {
+        $ds->label = $key;
+        $ds->mimetype = $value['type'];
+        $ds->control_group = 'M';
+        $ds->setContentFromString($value['content']);
+      }
     }
   }
 
