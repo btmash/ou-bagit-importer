@@ -173,8 +173,10 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
           'message' => t("Page @page hash does not match hash in recipe.", array('@page' => $object_array['file'])),
         );
       }
-      getimagesize($object_file, $iptc_info);
-      var_dump($iptc_info);
+      $exif_info = exif_read_data($object_file);
+      if (!empty($exif_info['ImageDescription'])) {
+        $physical_desc_data = $exif_info['ImageDescription'];
+      }
       $finfo = finfo_open(FILEINFO_MIME_TYPE);
       $datastreams['OBJ'] = array(
         'type' => finfo_file($finfo, drupal_realpath($object_file)),
@@ -280,7 +282,7 @@ function _ou_bagit_importer_generate_book_page_mods($label, $physical_desc_data 
   $mods .= "<titleInfo><title>{$label}</title><subTitle/></titleInfo>";
   if (!empty($physical_desc_data)) {
     // Do something.
-    $mods .= "";
+    $mods .= "<physicalDescription><note>{$physical_desc_data}</note></physicalDescription>";
   }
   if (!empty($copyright_data)) {
     $mods .= "<accessCondition type='use and reproduction'>{$copyright_data}</accessCondition>";
