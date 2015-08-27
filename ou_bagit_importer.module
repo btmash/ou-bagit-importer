@@ -174,7 +174,7 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
         );
       }
       getimagesize($object_file, $iptc_info);
-      dpm($iptc_info);
+      var_dump($iptc_info);
       $finfo = finfo_open(FILEINFO_MIME_TYPE);
       $datastreams['OBJ'] = array(
         'type' => finfo_file($finfo, drupal_realpath($object_file)),
@@ -193,10 +193,12 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
   if (!empty($object_array['exif'])) {
     // Create a copy of the exif file since we are dealing with relative links.
     $exif_file = _ou_bagit_importer_copy($object_array['source_uri'], $object_array['drupal_directory'], $object_array['exif']);
-    $datastreams['EXIF'] = array(
-      'type' => 'text/plain',
-      'content' => file_get_contents($exif_file),
-    );
+    if (file_exists($exif_file)) {
+      $datastreams['EXIF'] = array(
+        'type' => 'text/plain',
+        'content' => file_get_contents($exif_file),
+      );
+    }
   }
 
   // Capture the MODS, DC data.

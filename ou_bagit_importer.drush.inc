@@ -172,7 +172,7 @@ function ou_bagit_importer_is_path_remote($path) {
  */
 function _ou_bagit_importer_write_results($filename, $result, $overwrite = FALSE) {
   $results = array();
-  if ($overwrite) {
+  if ($overwrite && file_exists($filename)) {
     $results = (array) drupal_json_decode(file_get_contents($filename));
   }
   $results[$result['object']] = $result;
