@@ -130,7 +130,7 @@ function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $ob
     'source_uri' => $source_uri,
     'drupal_directory' => $drupal_directory,
     'file' => $page['file'],
-    'hash' => $page['sha1'],
+    'hash' => $page['md5'],
     'exif' => $page['exif'],
     'type' => 'islandora:pageCModel',
     'book' => $json_data['uuid'],
