@@ -5,43 +5,43 @@
         "uuid": "10ef5a2e-e6fe-5d6e-8945-99c5cd634318",
         "label": "De homine",
         "metadata": {
-            "marcxml": "Test_0002.xml"
+            "marcxml": "http://external-recipe.com/Test_0002/data/Test_0002.xml"
         },
         "pages": [
             {
                 "label": "Image 1",
-                "file": "0.tif",
+                "file": "http://external-recipe.com/Test_0002/data/0.tif",
                 "md5": "70a1d728d7dbaa23adfbadadf705ff8e",
                 "uuid": "fa7dada4-0cf0-5a38-87c9-524e1599306f",
-                "exif": "0.tif.exif.txt"
+                "exif": "http://external-recipe.com/Test_0002/data/0.tif.exif.txt"
             },
             {
                 "label": "Image 2",
-                "file": "1.tif",
+                "file": "http://external-recipe.com/Test_0002/data/1.tif",
                 "md5": "44cffb359021a59b835a5a29703f226f",
                 "uuid": "246ef7a0-a703-536b-9665-372de9bfd4cf",
-                "exif": "1.tif.exif.txt"
+                "exif": "http://external-recipe.com/Test_0002/data/1.tif.exif.txt"
             },
             {
                 "label": "Image 3",
-                "file": "2.tif",
+                "file": "http://external-recipe.com/Test_0002/data/2.tif",
                 "md5": "56a4f5d681fde657488f8e9514ae712b",
                 "uuid": "031f7313-926a-5552-ac22-bde2a5eaa423",
-                "exif": "2.tif.exif.txt"
+                "exif": "http://external-recipe.com/Test_0002/data/2.tif.exif.txt"
             },
             {
                 "label": "Image 4",
-                "file": "3.tif",
+                "file": "http://external-recipe.com/Test_0002/data/3.tif",
                 "md5": "af83eacfe0bda77120e3e3ab6e7887eb",
                 "uuid": "9f8dafa7-b654-5456-8022-5acc614d823b",
-                "exif": "3.tif.exif.txt"
+                "exif": "http://external-recipe.com/Test_0002/data/3.tif.exif.txt"
             },
             {
                 "label": "Image 5",
-                "file": "4.tif",
+                "file": "http://external-recipe.com/Test_0002/data/4.tif",
                 "md5": "36923388aab7f0a37cf7de5be5b93b86",
                 "uuid": "38e146c6-6915-5a40-b71e-32b83abc1aaf",
-                "exif": "4.tif.exif.txt"
+                "exif": "http://external-recipe.com/Test_0002/data/4.tif.exif.txt"
             }
        ]
     }
