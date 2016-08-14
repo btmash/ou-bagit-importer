@@ -175,7 +175,7 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
       }
       $exif_info = exif_read_data($object_file);
       if (!empty($exif_info['ImageDescription'])) {
-        $physical_desc_data = $exif_info['ImageDescription'];
+        $physical_desc_data = htmlspecialchars($exif_info['ImageDescription']);
       }
       $finfo = finfo_open(FILEINFO_MIME_TYPE);
       $datastreams['OBJ'] = array(
@@ -243,7 +243,7 @@ function ou_bagit_importer_save_book_page($object_array, $json_recipe) {
   if ($new) {
     islandora_add_object($islandora_object);
   }
-
+  
   return array(
     'object' => $islandora_object->id,
     'result' => TRUE,
