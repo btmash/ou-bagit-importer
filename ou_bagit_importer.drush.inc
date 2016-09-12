@@ -1,6 +1,10 @@
 <?php
 
 /**
+ * @file
+ */
+
+/**
  * Implements hook_drush_command().
  */
 function ou_bagit_importer_drush_command() {
@@ -30,6 +34,9 @@ function ou_bagit_importer_drush_command() {
   return $items;
 }
 
+/**
+ *
+ */
 function drush_ou_bagit_importer_import_ou_bag() {
   $uri = drush_get_option('recipe_uri');
   $parent_collection = drush_get_option('parent_collection');
@@ -53,6 +60,9 @@ function drush_ou_bagit_importer_import_ou_bag() {
   }
 }
 
+/**
+ *
+ */
 function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $json_filename, $parent_collection) {
   $json_data = drupal_json_decode(file_get_contents("{$drupal_directory}/{$json_filename}"));
   if ($json_data) {
@@ -68,7 +78,8 @@ function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $js
         'label' => $json_data['recipe']['label'],
         'metadata' => $metadata,
       );
-      ou_bagit_importer_save_book_collection($object, $json_data['recipe'], $parent_collection);
+      $result = ou_bagit_importer_save_book_collection($object, $json_data['recipe'], $parent_collection);
+      _ou_bagit_importer_write_results("{$drupal_directory}/results.json", $result, TRUE);
       drupal_set_message(t('Saving book collection @book', array('@book' => $object['uuid'])));
       ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data['recipe']);
     }
@@ -82,6 +93,9 @@ function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $js
   }
 }
 
+/**
+ *
+ */
 function ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data) {
   $batch = array(
     'operations' => array(),
@@ -107,66 +121,60 @@ function ou_bagit_importer_process_json_book_pages($source_uri, $drupal_director
   batch_set($batch);
 }
 
-function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $object, $page_number, $page, $json_data) {
-  $file = _ou_bagit_importer_copy($source_uri, $drupal_directory, $page['file'], $page['sha1']);
-  $exif = _ou_bagit_importer_copy($source_uri, $drupal_directory, $page['exif']);
-  if ($file) {
-    $file_hash = md5_file($file);
-    if ($file_hash == $page['sha1']) {
-      $object = array(
-        'type' => 'islandora:pageCModel',
-        'book' => $json_data['uuid'],
-        'page_number' => $page_number,
-        'file' => $file,
-        'exif' => $exif,
-        'uuid' => $page['uuid'],
-        'label' => $page['label'],
-        'metadata' => $metadata,
-      );
-      drupal_set_message(t("Page @page will get ingested here", array('@page' => $file)));
-      ou_bagit_importer_save_book_page($object, $json_data);
-    }
-    else {
-      drupal_set_message(t("Page @page hash does not match hash in recipe.", array('@page' => $file)), 'warning');
-    }
-  }
-  else {
-    drupal_set_message(t("Could not find @page specified in recipe.", array('@page' => $page['file'])), 'warning');
+/**
+ *
+ */
+function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $object, $page_number, $page, $json_data, &$context) {
+  $result = array();
+  $object = array(
+    'source_uri' => $source_uri,
+    'drupal_directory' => $drupal_directory,
+    'file' => $page['file'],
+    'hash' => $page['md5'],
+    'exif' => $page['exif'],
+    'type' => 'islandora:pageCModel',
+    'book' => $json_data['uuid'],
+    'page_number' => $page_number,
+    'uuid' => $page['uuid'],
+    'label' => $page['label'],
+    'metadata' => $metadata,
+  );
+  drupal_set_message(t("Page @page will get ingested here", array('@page' => $file)));
+  $result = ou_bagit_importer_save_book_page($object, $json_data);
+
+  if (!empty($result)) {
+    _ou_bagit_importer_write_results("{$drupal_directory}/results.json", $result);
   }
 }
 
-function _ou_bagit_importer_batches_finished() {
+/**
+ *
+ */
+function _ou_bagit_importer_batches_finished($success, $results, $operations) {
   drush_print('Ingest complete!');
 }
 
 /**
- * Copies file from path to destination directory.
+ * Checks if the path to bag is remote or local.
  */
-function _ou_bagit_importer_copy($source_uri, $dest_directory, $path, $hash = "") {
-  $file = basename($path);
-  $source = "{$source_uri}/{$path}";
-  if (strpos($path, 'http') === 0) {
-    $source = $path;
+function ou_bagit_importer_is_path_remote($path) {
+  $host = parse_url($path, PHP_URL_HOST);
+  if ($host === NULL) {
+    return FALSE;
   }
-  // Idea: Use source so we're not copying the file and reduce disk I/O
-  if (!ou_bagit_importer_is_path_remote($source)) {
-    return $source;
-  }
-  $destination = "{$dest_directory}/{$file}";
-  if (file_exists($destination) && md5_file($destination) == $hash) {
-    return $destination;
-  }
-  $status = @copy($source, $destination);
-  if ($status) {
-    return $destination;
+  else {
+    return TRUE;
   }
 }
 
-function ou_bagit_importer_is_path_remote($path) {
-    $host = parse_url($path, PHP_URL_HOST);
-    if ($host === NULL) {
-        return false;
-    } else {
-        return true;
-    }
+/**
+ * Writes result to file.
+ */
+function _ou_bagit_importer_write_results($filename, $result, $overwrite = FALSE) {
+  $results = array();
+  if ($overwrite && file_exists($filename)) {
+    $results = (array) drupal_json_decode(file_get_contents($filename));
+  }
+  $results[$result['object']] = $result;
+  file_put_contents($filename, drupal_json_encode($results));
 }
