@@ -131,7 +131,7 @@ function ou_bagit_importer_process_json_book_pages($source_uri, $drupal_director
 /**
  *
  */
-function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $object, $page_number, $page, $json_data, &$context, $pid_namespace ) {
+function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $object, $page_number, $page, $json_data, $pid_namespace, &$context ) {
   $result = array();
   $object = array(
     'pid_namespace' => $pid_namespace,
