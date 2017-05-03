@@ -87,7 +87,7 @@ function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $js
       $result = ou_bagit_importer_save_book_collection($object, $json_data['recipe'], $parent_collection, $pid_namespace);
       _ou_bagit_importer_write_results("{$drupal_directory}/results.json", $result, TRUE);
       drupal_set_message(t('Saving book collection @book', array('@book' => $object['uuid'])));
-      ou_bagit_importer_process_json_book_pages($pid_namespace, $source_uri, $drupal_directory, $object, $json_data['recipe']);
+      ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data['recipe'], $pid_namespace );
     }
 
     $batch =& batch_get();
@@ -102,7 +102,7 @@ function ou_bagit_importer_process_json_file($source_uri, $drupal_directory, $js
 /**
  *
  */
-function ou_bagit_importer_process_json_book_pages($pid_namespace, $source_uri, $drupal_directory, $object, $json_data) {
+function ou_bagit_importer_process_json_book_pages($source_uri, $drupal_directory, $object, $json_data, $pid_namespace) {
   $batch = array(
     'operations' => array(),
     'finished' => '_ou_bagit_importer_batches_finished',
@@ -115,13 +115,13 @@ function ou_bagit_importer_process_json_book_pages($pid_namespace, $source_uri, 
     $batch['operations'][] = array(
       'ou_bagit_importer_batch_import_page',
       array(
-        $pid_namespace,
         $source_uri,
         $drupal_directory,
         $object,
         $key,
         $page,
         $json_data,
+        $pid_namespace,
       ),
     );
   }
@@ -131,7 +131,7 @@ function ou_bagit_importer_process_json_book_pages($pid_namespace, $source_uri, 
 /**
  *
  */
-function ou_bagit_importer_batch_import_page($pid_namespace, $source_uri, $drupal_directory, $object, $page_number, $page, $json_data, &$context) {
+function ou_bagit_importer_batch_import_page($source_uri, $drupal_directory, $object, $page_number, $page, $json_data, &$context, $pid_namespace ) {
   $result = array();
   $object = array(
     'pid_namespace' => $pid_namespace,
